@@ -124,57 +124,148 @@ if st.button("🔍 Estimate 🔍"):
         st.error(f"❌ {e}")
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
-    
+    # نمودار مقایسه دوم (مشابه کد اصلی)
+    try:
+        fig, ax = plt.subplots(figsize=(6, 5))
+        models = ["Logistic Regression", "Random Forest", "XG Boosting"]
+        probabilities = [prob_log, prob_rf, prob_gb]
+        sns.barplot(x=models, y=probabilities, palette='mako', ax=ax)
+        ax.set_title("Model Probability Comparison  ")
+        ax.set_ylabel("HFpEF Probability ")
+        st.pyplot(fig)
+    except:
+        pass
 
-    # Feature Importance for Random Forest and XGBoost
+    # Feature Importance Analysis (با در نظر گیری PCA)
     try:
         st.subheader("📊 Feature Importance Analysis")
+        
+        # دریافت اطلاعات PCA از pipeline
+        pca_step = pipeline.named_steps['pca']
+        preprocessing_step = pipeline.named_steps['preprocessing']
+        
+        # نام‌های ویژگی‌ها پس از preprocessing (قبل از PCA)
+        feature_names_after_preprocessing = preprocessing_step.get_feature_names_out()
         
         # Random Forest Feature Importance
         if hasattr(rf_model, 'feature_importances_'):
             st.write("### 🌳 Random Forest Feature Importance")
-            rf_importance = rf_model.feature_importances_
-            n_features = len(rf_importance)
             
-            # استفاده از نام‌های ویژگی اصلی یا PC names
-            if n_features <= len(FEATURES):
-                feature_names = FEATURES[:n_features]
-            else:
-                feature_names = [f"PC_{i+1}" for i in range(n_features)]
+            # Feature importance روی Principal Components
+            pc_importance = rf_model.feature_importances_
+            n_components = len(pc_importance)
             
-            rf_importance_df = pd.DataFrame({
-                "Feature": feature_names, 
-                "Importance": rf_importance
+            st.write("**Feature Importance on Principal Components:**")
+            pc_df = pd.DataFrame({
+                "Component": [f"PC_{i+1}" for i in range(n_components)],
+                "Importance": pc_importance
             }).sort_values(by="Importance", ascending=False)
             
             fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=rf_importance_df.head(10), x="Importance", y="Feature", palette="viridis", ax=ax)
-            ax.set_title("Top 10 Feature Importance - Random Forest")
+            sns.barplot(data=pc_df.head(10), x="Importance", y="Component", palette="viridis", ax=ax)
+            ax.set_title("Principal Components Importance - Random Forest")
             ax.set_xlabel("Importance Score")
             st.pyplot(fig)
+            
+            # تبدیل به original features با استفاده از PCA components
+            if hasattr(pca_step, 'components_'):
+                st.write("**Contribution of Original Features to Top Principal Components:**")
+                
+                # محاسبه contribution ویژگی‌های اصلی
+                original_importance = np.zeros(len(feature_names_after_preprocessing))
+                
+                for i, pc_imp in enumerate(pc_importance):
+                    if i < len(pca_step.components_):
+                        # ضرب importance در component weights
+                        original_importance += pc_imp * np.abs(pca_step.components_[i])
+                
+                original_df = pd.DataFrame({
+                    "Original_Feature": feature_names_after_preprocessing,
+                    "Estimated_Importance": original_importance
+                }).sort_values(by="Estimated_Importance", ascending=False)
+                
+                fig, ax = plt.subplots(figsize=(12, 8))
+                sns.barplot(data=original_df.head(15), x="Estimated_Importance", y="Original_Feature", palette="viridis", ax=ax)
+                ax.set_title("Estimated Original Feature Importance - Random Forest")
+                ax.set_xlabel("Estimated Importance")
+                plt.xticks(rotation=0)
+                plt.tight_layout()
+                st.pyplot(fig)
         
         # XGBoost Feature Importance
         if hasattr(xgb_model, 'feature_importances_'):
             st.write("### 🚀 XGBoost Feature Importance")
-            xgb_importance = xgb_model.feature_importances_
-            n_features = len(xgb_importance)
             
-            # استفاده از نام‌های ویژگی اصلی یا PC names
-            if n_features <= len(FEATURES):
-                feature_names = FEATURES[:n_features]
-            else:
-                feature_names = [f"PC_{i+1}" for i in range(n_features)]
+            # Feature importance روی Principal Components
+            pc_importance = xgb_model.feature_importances_
+            n_components = len(pc_importance)
             
-            xgb_importance_df = pd.DataFrame({
-                "Feature": feature_names, 
-                "Importance": xgb_importance
+            st.write("**Feature Importance on Principal Components:**")
+            pc_df = pd.DataFrame({
+                "Component": [f"PC_{i+1}" for i in range(n_components)],
+                "Importance": pc_importance
             }).sort_values(by="Importance", ascending=False)
             
             fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=xgb_importance_df.head(10), x="Importance", y="Feature", palette="plasma", ax=ax)
-            ax.set_title("Top 10 Feature Importance - XGBoost")
+            sns.barplot(data=pc_df.head(10), x="Importance", y="Component", palette="plasma", ax=ax)
+            ax.set_title("Principal Components Importance - XGBoost")
             ax.set_xlabel("Importance Score")
             st.pyplot(fig)
             
+            # تبدیل به original features
+            if hasattr(pca_step, 'components_'):
+                st.write("**Contribution of Original Features to Top Principal Components:**")
+                
+                # محاسبه contribution ویژگی‌های اصلی
+                original_importance = np.zeros(len(feature_names_after_preprocessing))
+                
+                for i, pc_imp in enumerate(pc_importance):
+                    if i < len(pca_step.components_):
+                        # ضرب importance در component weights
+                        original_importance += pc_imp * np.abs(pca_step.components_[i])
+                
+                original_df = pd.DataFrame({
+                    "Original_Feature": feature_names_after_preprocessing,
+                    "Estimated_Importance": original_importance
+                }).sort_values(by="Estimated_Importance", ascending=False)
+                
+                fig, ax = plt.subplots(figsize=(12, 8))
+                sns.barplot(data=original_df.head(15), x="Estimated_Importance", y="Original_Feature", palette="plasma", ax=ax)
+                ax.set_title("Estimated Original Feature Importance - XGBoost")
+                ax.set_xlabel("Estimated Importance")
+                plt.xticks(rotation=0)
+                plt.tight_layout()
+                st.pyplot(fig)
+                
+        st.info("💡 توجه: چون از PCA استفاده شده، اهمیت ویژگی‌های اصلی تخمین زده شده است.")
+        
     except Exception as feature_error:
         st.warning(f"Feature importance analysis could not be performed: {feature_error}")
+        st.error(f"Details: {str(feature_error)}")
+
+    # SHAP Analysis (اختیاری)
+    try:
+        import shap
+        st.subheader("🎯 SHAP Analysis")
+        
+        # تلاش برای SHAP analysis
+        features_before_pca = pipeline.named_steps['preprocessing'].get_feature_names_out()
+        df_for_shap = pd.DataFrame(
+            pipeline.named_steps['preprocessing'].transform(input_df), 
+            columns=features_before_pca
+        )
+        
+        # SHAP برای XGBoost
+        explainer = shap.Explainer(xgb_model)
+        shap_values = explainer(df_for_shap)
+        
+        st.write("### 🎯 SHAP Waterfall Plot (XGBoost)")
+        fig, ax = plt.subplots(figsize=(12, 8))
+        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
+        st.pyplot(fig)
+        
+    except ImportError:
+        st.info("💡 SHAP library not available. Install with: pip install shap")
+    except Exception as shap_error:
+        st.warning(f"SHAP analysis could not be performed: {shap_error}")
+        st.info("This might be due to model incompatibility or preprocessing issues.")
