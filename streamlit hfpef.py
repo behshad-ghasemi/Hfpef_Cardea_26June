@@ -86,7 +86,7 @@ if st.button("🔍 Estimate 🔍"):
     try:
         input_df = pd.DataFrame([user_input])
         
-        # تبدیل ویژگی‌های کتگوریکال به نوع مناسب
+       
         for cat_feature in CAT_FEATURES:
             if cat_feature in input_df.columns:
                 input_df[cat_feature] = input_df[cat_feature].astype('category')
@@ -119,120 +119,11 @@ if st.button("🔍 Estimate 🔍"):
         st.error(f"❌ {e}")
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
-    # نمودار مقایسه دوم (مشابه کد اصلی)
-    try:
-        fig, ax = plt.subplots(figsize=(6, 5))
-        models = ["Logistic Regression", "Random Forest", "XG Boosting"]
-        probabilities = [prob_log, prob_rf, prob_gb]
-        sns.barplot(x=models, y=probabilities, palette='mako', ax=ax)
-        ax.set_title("Model Probability Comparison  ")
-        ax.set_ylabel("HFpEF Probability ")
-        st.pyplot(fig)
-    except:
-        pass
 
-    # Feature Importance Analysis (با در نظر گیری PCA)
-    try:
-        st.subheader("📊 Feature Importance Analysis")
+    
+
         
-        # دریافت اطلاعات PCA از pipeline
-        pca_step = pipeline.named_steps['pca']
-        preprocessing_step = pipeline.named_steps['preprocessing']
-        
-        # نام‌های ویژگی‌ها پس از preprocessing (قبل از PCA)
-        feature_names_after_preprocessing = preprocessing_step.get_feature_names_out()
-        
-        # Random Forest Feature Importance
-        if hasattr(rf_model, 'feature_importances_'):
-            st.write("### 🌳 Random Forest Feature Importance")
-            
-            # Feature importance روی Principal Components
-            pc_importance = rf_model.feature_importances_
-            n_components = len(pc_importance)
-            
-            st.write("**Feature Importance on Principal Components:**")
-            pc_df = pd.DataFrame({
-                "Component": [f"PC_{i+1}" for i in range(n_components)],
-                "Importance": pc_importance
-            }).sort_values(by="Importance", ascending=False)
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=pc_df.head(10), x="Importance", y="Component", palette="viridis", ax=ax)
-            ax.set_title("Principal Components Importance - Random Forest")
-            ax.set_xlabel("Importance Score")
-            st.pyplot(fig)
-            
-            # تبدیل به original features با استفاده از PCA components
-            if hasattr(pca_step, 'components_'):
-                st.write("**Contribution of Original Features to Top Principal Components:**")
-                
-                # محاسبه contribution ویژگی‌های اصلی
-                original_importance = np.zeros(len(feature_names_after_preprocessing))
-                
-                for i, pc_imp in enumerate(pc_importance):
-                    if i < len(pca_step.components_):
-                        # ضرب importance در component weights
-                        original_importance += pc_imp * np.abs(pca_step.components_[i])
-                
-                original_df = pd.DataFrame({
-                    "Original_Feature": feature_names_after_preprocessing,
-                    "Estimated_Importance": original_importance
-                }).sort_values(by="Estimated_Importance", ascending=False)
-                
-                fig, ax = plt.subplots(figsize=(12, 8))
-                sns.barplot(data=original_df.head(15), x="Estimated_Importance", y="Original_Feature", palette="viridis", ax=ax)
-                ax.set_title("Estimated Original Feature Importance - Random Forest")
-                ax.set_xlabel("Estimated Importance")
-                plt.xticks(rotation=0)
-                plt.tight_layout()
-                st.pyplot(fig)
-        
-        # XGBoost Feature Importance
-        if hasattr(xgb_model, 'feature_importances_'):
-            st.write("### 🚀 XGBoost Feature Importance")
-            
-            # Feature importance روی Principal Components
-            pc_importance = xgb_model.feature_importances_
-            n_components = len(pc_importance)
-            
-            st.write("**Feature Importance on Principal Components:**")
-            pc_df = pd.DataFrame({
-                "Component": [f"PC_{i+1}" for i in range(n_components)],
-                "Importance": pc_importance
-            }).sort_values(by="Importance", ascending=False)
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=pc_df.head(10), x="Importance", y="Component", palette="plasma", ax=ax)
-            ax.set_title("Principal Components Importance - XGBoost")
-            ax.set_xlabel("Importance Score")
-            st.pyplot(fig)
-            
-            # تبدیل به original features
-            if hasattr(pca_step, 'components_'):
-                st.write("**Contribution of Original Features to Top Principal Components:**")
-                
-                # محاسبه contribution ویژگی‌های اصلی
-                original_importance = np.zeros(len(feature_names_after_preprocessing))
-                
-                for i, pc_imp in enumerate(pc_importance):
-                    if i < len(pca_step.components_):
-                        # ضرب importance در component weights
-                        original_importance += pc_imp * np.abs(pca_step.components_[i])
-                
-                original_df = pd.DataFrame({
-                    "Original_Feature": feature_names_after_preprocessing,
-                    "Estimated_Importance": original_importance
-                }).sort_values(by="Estimated_Importance", ascending=False)
-                
-                fig, ax = plt.subplots(figsize=(12, 8))
-                sns.barplot(data=original_df.head(15), x="Estimated_Importance", y="Original_Feature", palette="plasma", ax=ax)
-                ax.set_title("Estimated Original Feature Importance - XGBoost")
-                ax.set_xlabel("Estimated Importance")
-                plt.xticks(rotation=0)
-                plt.tight_layout()
-                st.pyplot(fig)
-                
-        st.info("💡 توجه: چون از PCA استفاده شده، اهمیت ویژگی‌های اصلی تخمین زده شده است.")
+
         
     except Exception as feature_error:
         st.warning(f"Feature importance analysis could not be performed: {feature_error}")
