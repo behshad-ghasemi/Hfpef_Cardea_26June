@@ -178,30 +178,3 @@ if st.button("🔍 Estimate 🔍"):
             
     except Exception as feature_error:
         st.warning(f"Feature importance analysis could not be performed: {feature_error}")
-
-    # SHAP Analysis (اختیاری)
-    try:
-        import shap
-        st.subheader("🎯 SHAP Analysis")
-        
-        # تلاش برای SHAP analysis
-        features_before_pca = pipeline.named_steps['preprocessing'].get_feature_names_out()
-        df_for_shap = pd.DataFrame(
-            pipeline.named_steps['preprocessing'].transform(input_df), 
-            columns=features_before_pca
-        )
-        
-        # SHAP برای XGBoost
-        explainer = shap.Explainer(xgb_model)
-        shap_values = explainer(df_for_shap)
-        
-        st.write("### 🎯 SHAP Waterfall Plot (XGBoost)")
-        fig, ax = plt.subplots(figsize=(12, 8))
-        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
-        st.pyplot(fig)
-        
-    except ImportError:
-        st.info("💡 SHAP library not available. Install with: pip install shap")
-    except Exception as shap_error:
-        st.warning(f"SHAP analysis could not be performed: {shap_error}")
-        st.info("This might be due to model incompatibility or preprocessing issues.")
