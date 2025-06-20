@@ -82,7 +82,7 @@ for feature in FEATURES:
         user_input[feature] = st.number_input(f"{feature}:", step=0.1)
 
 if st.button("🔍 Estimate 🔍"):
-        try:
+    try:
         input_df = pd.DataFrame([user_input])
         input_df["sesso"] = input_df["sesso"].astype('category')
 
@@ -102,7 +102,6 @@ if st.button("🔍 Estimate 🔍"):
         else:
             st.success("✅ Low Risk of HFpEF Detected 🎉")
 
-        # Chart 1
         fig, ax = plt.subplots()
         sns.barplot(x=["Logistic", "Random Forest", "XGBoost"], y=[prob_log, prob_rf, prob_gb], palette="Set2", ax=ax)
         ax.set_ylim(0, 1)
@@ -110,7 +109,6 @@ if st.button("🔍 Estimate 🔍"):
         ax.set_title("Model Comparison")
         st.pyplot(fig)
 
-        # Chart 2 — این قسمت رو هم داخل try آوردیم
         fig, ax = plt.subplots(figsize=(6, 5))
         models = ["Logistic Regression", "Random Forest", "XG Boosting"]
         probabilities = [prob_log, prob_rf, prob_gb]
