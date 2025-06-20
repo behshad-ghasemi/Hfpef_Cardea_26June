@@ -87,6 +87,17 @@ if st.button("🔍 Estimate 🔍"):
 
         transformed_input = pipeline.transform(input_df)
 
+        # SHAP analysis
+        explainer = shap.Explainer(xgb_model, pipeline.transformer_.transformers_[0][1].named_steps['scaler'].transform(pipeline.transformer_.transformers_[0][1].named_steps['imputer'].transform(input_df[NUM_FEATURES])))
+
+        shap_values = explainer(transformed_input)
+
+# نمایش بارزترین فیچرها برای پیش‌بینی این بیمار
+        st.subheader("🧬 SHAP Feature Impact for This Patient")
+        fig_shap = shap.plots.waterfall(shap_values[0], show=False)  # show=False برای کنترل دستی
+        st.pyplot(bbox_inches='tight', dpi=300)
+
+
         prob_log = log_model.predict_proba(transformed_input)[0][1]
         prob_rf = rf_model.predict_proba(transformed_input)[0][1]
         prob_gb = xgb_model.predict_proba(transformed_input)[0][1]
