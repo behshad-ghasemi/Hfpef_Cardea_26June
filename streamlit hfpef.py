@@ -76,9 +76,7 @@ pipeline, log_model, rf_model, xgb_model = load_models()
 
 user_input = {}
 for feature in FEATURES:
-    if feature == "sesso":
-        user_input[feature] = st.selectbox("Sesso:", options=["0", "1"])
-    elif any(x in feature.lower() for x in ["assente", "presente", "no", "si", "0", "1", "2"]):
+    if any(x in feature.lower() for x in ["assente", "presente", "no", "si", "0", "1", "2"]):
         user_input[feature] = st.number_input(f"{feature}:", step=1.0)
     else:
         user_input[feature] = st.number_input(f"{feature}:", step=0.1)
