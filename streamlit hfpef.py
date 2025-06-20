@@ -85,7 +85,21 @@ if st.button("🔍 Estimate 🔍"):
     try:
         input_df = pd.DataFrame([user_input])
 
+        pipeline_features = pipeline.named_steps['preprocessing'].get_feature_names_out()
         transformed_input = pipeline.transform(input_df)
+        
+        transformed_df = pd.DataFrame(transformed_input, columns=pipeline_features)
+                # SHAP analysis
+        # SHAP explainer (برای XGBoost بهتره از TreeExplainer استفاده کنی)
+        explainer = shap.Explainer(xgb_model)
+        shap_values = explainer(transformed_input)
+        st.subheader("🎯 SHAP Explanation for this Patient (XGBoost)")
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
+        st.pyplot(fig)
+
+
 
 
         prob_log = log_model.predict_proba(transformed_input)[0][1]
@@ -115,15 +129,6 @@ if st.button("🔍 Estimate 🔍"):
         st.error(f"❌ {e}")
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
-        # SHAP analysis
-        # SHAP explainer (برای XGBoost بهتره از TreeExplainer استفاده کنی)
-        explainer = shap.Explainer(xgb_model)
-        shap_values = explainer(transformed_input)
-        st.subheader("🎯 SHAP Explanation for this Patient (XGBoost)")
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
-        st.pyplot(fig)
         
     def save_plot_as_pdf(fig):
         buffer = BytesIO()
