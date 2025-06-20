@@ -10,27 +10,21 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.decomposition import PCA
-import joblib
 import shap
 
 import sklearn
 print(sklearn.__version__)
 
-FEATURES = [    'Epicardial fat thickness (mm)', 'LV mass i (g/m2) Calcolo automatico',
+FEATURES = [
+    'Epicardial fat thickness (mm)', 'LV mass i (g/m2) Calcolo automatico',
     'LAD (mm)','LVEF (%)','E/e avg', 'DM','WHO-FC','PAS (mmHg)', 'NT-pro-BNP (pg/mL)', 'AF']
-
-
 
 NUM_FEATURES = [
     'Epicardial fat thickness (mm)',
     'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)','LVEF (%)','E/e avg', 'PAS (mmHg)', 'NT-pro-BNP (pg/mL)'
 ]
 
-CAT_FEATURES = [
-    'DM',
-    'WHO-FC',
-    'FA']
-
+CAT_FEATURES = ['DM', 'WHO-FC', 'FA']
 
 preprocessor = ColumnTransformer(
     transformers=[
@@ -38,7 +32,7 @@ preprocessor = ColumnTransformer(
             ('imputer', SimpleImputer(strategy='median')),
             ('scaler', StandardScaler())
         ]), NUM_FEATURES),
-        
+
         ('cat', Pipeline([
             ('imputer', SimpleImputer(strategy='most_frequent')),
             ('onehot', OneHotEncoder(handle_unknown='ignore'))
@@ -46,6 +40,7 @@ preprocessor = ColumnTransformer(
     ],
     remainder='drop'
 )
+
 full_pipeline = Pipeline([
     ('preprocessing', preprocessor),
     ('pca', PCA(n_components=0.95))
@@ -59,6 +54,7 @@ st.markdown(" 👩‍💻 Behshad , programmer : b.ghaseminezhadabdol@studio.uni
 st.markdown(" ")
 st.markdown("  ")
 st.markdown("Insert the patient's clinical data below, to detect the probability of having HFpEF. ")
+
 @st.cache_resource
 def load_models():
     try:
@@ -73,34 +69,26 @@ def load_models():
 
 pipeline, log_model, rf_model, xgb_model = load_models()
 
-
 user_input = {}
 for feature in FEATURES:
-    if any(x in feature.lower() for x in ["assente", "presente", "no", "si", "0", "1", "2"]):
-        user_input[feature] = st.number_input(f"{feature}:", step=1.0)
-    else:
-        user_input[feature] = st.number_input(f"{feature}:", step=0.1)
+    user_input[feature] = st.number_input(f"{feature}:", step=0.1)
 
 if st.button("🔍 Estimate 🔍"):
     try:
         input_df = pd.DataFrame([user_input])
+        transformed_input = pipeline.transform(input_df)
 
-        pipeline_features = pipeline.named_steps['preprocessing'].get_feature_names_out()
-        
-        
-        transformed_df = pd.DataFrame(transformed_input, columns=pipeline_features)
-                # SHAP analysis
-        # SHAP explainer (برای XGBoost بهتره از TreeExplainer استفاده کنی)
+        # Get feature names BEFORE PCA
+        features_before_pca = pipeline.named_steps['preprocessing'].get_feature_names_out()
+        df_for_shap = pd.DataFrame(pipeline.named_steps['preprocessing'].transform(input_df), columns=features_before_pca)
+
         explainer = shap.Explainer(xgb_model)
-        shap_values = explainer(transformed_input)
-        st.subheader("🎯 SHAP Explanation for this Patient (XGBoost)")
+        shap_values = explainer(df_for_shap)
 
+        st.subheader("🎯 SHAP Explanation for this Patient (XGBoost)")
         fig, ax = plt.subplots(figsize=(10, 5))
         shap.plots.waterfall(shap_values[0], max_display=10, show=False)
         st.pyplot(fig)
-
-
-
 
         prob_log = log_model.predict_proba(transformed_input)[0][1]
         prob_rf = rf_model.predict_proba(transformed_input)[0][1]
@@ -116,7 +104,6 @@ if st.button("🔍 Estimate 🔍"):
         else:
             st.success("✅ Low Risk of HFpEF Detected 🎉")
 
-# Bar chart for comparison
         fig, ax = plt.subplots(figsize=(6, 5))
         models = ["Logistic Regression", "Random Forest", "XG Boosting"]
         probabilities = [prob_log, prob_rf, prob_gb]
@@ -125,32 +112,19 @@ if st.button("🔍 Estimate 🔍"):
         ax.set_ylabel("HFpEF Probability ")
         st.pyplot(fig)
 
+        def plot_feature_importance(model):
+            importance = model.feature_importances_
+            features = FEATURES  # Make sure order matches
+            importance_df = pd.DataFrame({"Feature": features, "Importance": importance})
+            importance_df = importance_df.sort_values(by="Importance", ascending=False)
+
+            st.write("### Feature Importance - Random Forest")
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.barplot(x="Importance", y="Feature", data=importance_df, ax=ax)
+            st.pyplot(fig)
+            return fig
+
+        feature_importance_fig = plot_feature_importance(xgb_model)
+
     except Exception as e:
         st.error(f"❌ {e}")
-        st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
-
-        
-    def save_plot_as_pdf(fig):
-        buffer = BytesIO()
-        fig.savefig(buffer, format="pdf")
-        buffer.seek(0)
-        return buffer
-
-
-    
-    def plot_feature_importance(model):
-        importance = model.feature_importances_
-        features = ['Epicardial fat thickness (mm)', 'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)','LVEF (%)','E/e avg', 'DM','WHO-FC','PAS (mmHg)', 'NT-pro-BNP (pg/mL)', 'AF']
-        importance_df = pd.DataFrame({"Feature": features, "Importance": importance})
-        importance_df = importance_df.sort_values(by="Importance", ascending=False)
-
-        st.write("### Feature Importance - Random Forest")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.barplot(x="Importance", y="Feature", data=importance_df, ax=ax)
-        st.pyplot(fig)
-
-        return fig
-
-    feature_importance_fig = plot_feature_importance(xgb_model)
-
-
