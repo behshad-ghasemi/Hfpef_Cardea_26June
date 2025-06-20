@@ -115,3 +115,27 @@ if st.button("🔍 Estimate 🔍"):
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
 
+    def save_plot_as_pdf(fig):
+        buffer = BytesIO()
+        fig.savefig(buffer, format="pdf")
+        buffer.seek(0)
+        return buffer
+
+
+    
+    def plot_feature_importance(model):
+        importance = model.feature_importances_
+        features = ['Epicardial fat thickness (mm)', 'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)','LVEF (%)','E/e avg', 'DM','WHO-FC','PAS (mmHg)', 'NT-pro-BNP (pg/mL)', 'AF']
+        importance_df = pd.DataFrame({"Feature": features, "Importance": importance})
+        importance_df = importance_df.sort_values(by="Importance", ascending=False)
+
+        st.write("### Feature Importance - Random Forest")
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.barplot(x="Importance", y="Feature", data=importance_df, ax=ax)
+        st.pyplot(fig)
+
+        return fig
+
+    feature_importance_fig = plot_feature_importance(rf_model)
+
+
