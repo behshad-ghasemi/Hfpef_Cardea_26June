@@ -107,13 +107,19 @@ if st.button("🔍 Estimate 🔍"):
         else:
             st.success("✅ Low Risk of HFpEF Detected 🎉")
 
-        # نمودار مقایسه اول
+       
         fig, ax = plt.subplots()
         sns.barplot(x=["Logistic", "Random Forest", "XGBoost"], y=[prob_log, prob_rf, prob_gb], palette="Set2", ax=ax)
         ax.set_ylim(0, 1)
         ax.set_ylabel("Predicted Probability")
         ax.set_title("Model Comparison")
         st.pyplot(fig)
+
+        def save_plot_as_pdf(fig):
+        buffer = BytesIO()
+        fig.savefig(buffer, format="pdf")
+        buffer.seek(0)
+        return buffer
 
     except Exception as e:
         st.error(f"❌ {e}")
@@ -125,6 +131,3 @@ if st.button("🔍 Estimate 🔍"):
         
 
         
-    except Exception as feature_error:
-        st.warning(f"Feature importance analysis could not be performed: {feature_error}")
-        st.error(f"Details: {str(feature_error)}")
