@@ -114,16 +114,15 @@ if st.button("🔍 Estimate 🔍"):
         ax.set_ylabel("Predicted Probability")
         ax.set_title("Model Comparison")
         st.pyplot(fig)
-
+    except Exception as e:
+        st.error(f"❌ {e}")
+        st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
+        
 def save_plot_as_pdf(fig):
     buffer = BytesIO()
     fig.savefig(buffer, format="pdf")
     buffer.seek(0)
     return buffer
-
-    except Exception as e:
-        st.error(f"❌ {e}")
-        st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
 
     
