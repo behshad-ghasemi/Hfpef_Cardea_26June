@@ -84,7 +84,6 @@ for feature in FEATURES:
 if st.button("🔍 Estimate 🔍"):
     try:
         input_df = pd.DataFrame([user_input])
-        input_df["sesso"] = input_df["sesso"].astype('category')
 
         transformed_input = pipeline.transform(input_df)
 
