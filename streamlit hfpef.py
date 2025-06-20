@@ -136,6 +136,6 @@ if st.button("🔍 Estimate 🔍"):
 
         return fig
 
-    feature_importance_fig = plot_feature_importance(rf_model)
+    feature_importance_fig = plot_feature_importance(xgb_model)
 
 
