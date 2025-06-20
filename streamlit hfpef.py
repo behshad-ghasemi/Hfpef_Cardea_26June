@@ -10,6 +10,11 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.decomposition import PCA
+try:
+    import shap
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
 import joblib
 
 import sklearn
@@ -130,3 +135,83 @@ if st.button("🔍 Estimate 🔍"):
         st.pyplot(fig)
     except:
         pass
+
+    # Feature Importance for Random Forest and XGBoost
+    try:
+        st.subheader("📊 Feature Importance Analysis")
+        
+        # Random Forest Feature Importance
+        if hasattr(rf_model, 'feature_importances_'):
+            st.write("### 🌳 Random Forest Feature Importance")
+            rf_importance = rf_model.feature_importances_
+            n_features = len(rf_importance)
+            
+            # استفاده از نام‌های ویژگی اصلی یا PC names
+            if n_features <= len(FEATURES):
+                feature_names = FEATURES[:n_features]
+            else:
+                feature_names = [f"PC_{i+1}" for i in range(n_features)]
+            
+            rf_importance_df = pd.DataFrame({
+                "Feature": feature_names, 
+                "Importance": rf_importance
+            }).sort_values(by="Importance", ascending=False)
+            
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(data=rf_importance_df.head(10), x="Importance", y="Feature", palette="viridis", ax=ax)
+            ax.set_title("Top 10 Feature Importance - Random Forest")
+            ax.set_xlabel("Importance Score")
+            st.pyplot(fig)
+        
+        # XGBoost Feature Importance
+        if hasattr(xgb_model, 'feature_importances_'):
+            st.write("### 🚀 XGBoost Feature Importance")
+            xgb_importance = xgb_model.feature_importances_
+            n_features = len(xgb_importance)
+            
+            # استفاده از نام‌های ویژگی اصلی یا PC names
+            if n_features <= len(FEATURES):
+                feature_names = FEATURES[:n_features]
+            else:
+                feature_names = [f"PC_{i+1}" for i in range(n_features)]
+            
+            xgb_importance_df = pd.DataFrame({
+                "Feature": feature_names, 
+                "Importance": xgb_importance
+            }).sort_values(by="Importance", ascending=False)
+            
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(data=xgb_importance_df.head(10), x="Importance", y="Feature", palette="plasma", ax=ax)
+            ax.set_title("Top 10 Feature Importance - XGBoost")
+            ax.set_xlabel("Importance Score")
+            st.pyplot(fig)
+            
+    except Exception as feature_error:
+        st.warning(f"Feature importance analysis could not be performed: {feature_error}")
+
+    # SHAP Analysis (اختیاری)
+    try:
+        import shap
+        st.subheader("🎯 SHAP Analysis")
+        
+        # تلاش برای SHAP analysis
+        features_before_pca = pipeline.named_steps['preprocessing'].get_feature_names_out()
+        df_for_shap = pd.DataFrame(
+            pipeline.named_steps['preprocessing'].transform(input_df), 
+            columns=features_before_pca
+        )
+        
+        # SHAP برای XGBoost
+        explainer = shap.Explainer(xgb_model)
+        shap_values = explainer(df_for_shap)
+        
+        st.write("### 🎯 SHAP Waterfall Plot (XGBoost)")
+        fig, ax = plt.subplots(figsize=(12, 8))
+        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
+        st.pyplot(fig)
+        
+    except ImportError:
+        st.info("💡 SHAP library not available. Install with: pip install shap")
+    except Exception as shap_error:
+        st.warning(f"SHAP analysis could not be performed: {shap_error}")
+        st.info("This might be due to model incompatibility or preprocessing issues.")
