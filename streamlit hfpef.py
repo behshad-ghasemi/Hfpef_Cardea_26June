@@ -16,48 +16,20 @@ import joblib
 import sklearn
 print(sklearn.__version__)
 
-FEATURES = ["BSA (non toccare)", 'Epicardial fat thickness (mm)', 'LVEDD (mm)', 'LVESD (mm)', 'LV mass (g)',
-            'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)', 'LAV (ml)', 'iLAV (mL/m2) Calcolo automatico',
-            'LVEF (%)', 'MR 0=no, 1=min, 2=lieve, 3=mod, 4=sev', 'E/A', 'E/e avg', 'VCI diameter (mm)',
-            'sPAP (mmHg) = RV-RA + RAP (3-8-15)', 'Probabilità IP a riposo (1, bassa; 2, intermedia; 3, alta)', 'eta',
-            'BSA', 'IAS (0, assente; 1, presente)', 'Dislipidemia (0, assente; 1, presente, 2 s. metabolica)',
-            'Diabete mellito (0, assente; 1, presente, 2 diabete complicato)', 'Beta bloccante 1 si, 0 no',
-            'MRA 1 si, 0 no', 'ACE/ARB 1 si, 0 no',
-            'Terapia antiscompenso assente (0), sub-ottimale (1-2), ottimale (3)',
-            "Insufficienza renale lieve (si 1; no 0)", "Insufficienza renale severa (si 1; no 0)",
-            'classe funzionale WHO-FC',
-            'segni clinici di insufficienza cardiaca sinistra, astenia, dispnea (0, assenti; 1, presenti)',
-            'Segni clinici di insufficienz acardiaca destra, edemi (0, assenti; 1, presenti)',
-            'Qualsiasi segno di insufficienza cardiaca',
-            'PAS (mmHg)', 'PAD (mmHg)', 'NT-pro-BNP (pg/mL)',
-            'Fibrillazione atriale parossistica (0, assente; 1, presente)',
-            'Fibrillazione atriale cronica (0, assente; 1, presente)', 'Fumo (0 no; 1 si)', 'sesso']
+FEATURES = [    'Epicardial fat thickness (mm)', 'LV mass i (g/m2) Calcolo automatico',
+    'LAD (mm)','LVEF (%)','E/e avg', 'DM','WHO-FC','PAS (mmHg)', 'NT-pro-BNP (pg/mL)', 'AF']
 
 
 
 NUM_FEATURES = [
-    'Epicardial fat thickness (mm)', 'LVEDD (mm)', 'LVESD (mm)', 'LV mass (g)',
-    'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)', 'LAV (ml)', 'iLAV (mL/m2) Calcolo automatico',
-    'LVEF (%)', 'E/A', 'E/e avg', 'VCI diameter (mm)', 'sPAP (mmHg) = RV-RA + RAP (3-8-15)',
-    'eta', 'BSA', 'PAS (mmHg)', 'PAD (mmHg)', 'NT-pro-BNP (pg/mL)'
+    'Epicardial fat thickness (mm)',
+    'LV mass i (g/m2) Calcolo automatico', 'LAD (mm)','LVEF (%)','E/e avg', 'PAS (mmHg)', 'NT-pro-BNP (pg/mL)'
 ]
 
 CAT_FEATURES = [
-    'MR 0=no, 1=min, 2=lieve, 3=mod, 4=sev',
-    'Probabilità IP a riposo (1, bassa; 2, intermedia; 3, alta)',
-    'IAS (0, assente; 1, presente)', 'Dislipidemia (0, assente; 1, presente, 2 s. metabolica)',
-    'Diabete mellito (0, assente; 1, presente, 2 diabete complicato)',
-    'Beta bloccante 1 si, 0 no', 'MRA 1 si, 0 no', 'ACE/ARB 1 si, 0 no',
-    'Terapia antiscompenso assente (0), sub-ottimale (1-2), ottimale (3)',
-    'Insufficienza renale lieve (si 1; no 0)', 'Insufficienza renale severa (si 1; no 0)',
-    'classe funzionale WHO-FC',
-    'segni clinici di insufficienza cardiaca sinistra, astenia, dispnea (0, assenti; 1, presenti)',
-    'Segni clinici di insufficienz acardiaca destra, edemi (0, assenti; 1, presenti)',
-    'Qualsiasi segno di insufficienza cardiaca',
-    'Fibrillazione atriale parossistica (0, assente; 1, presente)',
-    'Fibrillazione atriale cronica (0, assente; 1, presente)', 'Fumo (0 no; 1 si)',
-    'sesso'
-]
+    'DM',
+    'WHO-FC',
+    'FA']
 
 
 preprocessor = ColumnTransformer(
