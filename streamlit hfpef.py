@@ -124,17 +124,7 @@ if st.button("🔍 Estimate 🔍"):
         st.error(f"❌ {e}")
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
-    # نمودار مقایسه دوم (مشابه کد اصلی)
-    try:
-        fig, ax = plt.subplots(figsize=(6, 5))
-        models = ["Logistic Regression", "Random Forest", "XG Boosting"]
-        probabilities = [prob_log, prob_rf, prob_gb]
-        sns.barplot(x=models, y=probabilities, palette='mako', ax=ax)
-        ax.set_title("Model Probability Comparison  ")
-        ax.set_ylabel("HFpEF Probability ")
-        st.pyplot(fig)
-    except:
-        pass
+    
 
     # Feature Importance for Random Forest and XGBoost
     try:
