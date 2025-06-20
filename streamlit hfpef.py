@@ -86,7 +86,7 @@ if st.button("🔍 Estimate 🔍"):
         input_df = pd.DataFrame([user_input])
 
         pipeline_features = pipeline.named_steps['preprocessing'].get_feature_names_out()
-        transformed_input = pipeline.transform(input_df)
+        
         
         transformed_df = pd.DataFrame(transformed_input, columns=pipeline_features)
                 # SHAP analysis
