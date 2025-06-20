@@ -115,7 +115,7 @@ if st.button("🔍 Estimate 🔍"):
         ax.set_title("Model Comparison")
         st.pyplot(fig)
 
-        def save_plot_as_pdf(fig):
+    def save_plot_as_pdf(fig):
         buffer = BytesIO()
         fig.savefig(buffer, format="pdf")
         buffer.seek(0)
