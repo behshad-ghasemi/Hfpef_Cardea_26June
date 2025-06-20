@@ -88,14 +88,14 @@ if st.button("🔍 Estimate 🔍"):
         transformed_input = pipeline.transform(input_df)
 
         # SHAP analysis
-        explainer = shap.Explainer(xgb_model, pipeline.transformer_.transformers_[0][1].named_steps['scaler'].transform(pipeline.transformer_.transformers_[0][1].named_steps['imputer'].transform(input_df[NUM_FEATURES])))
-
+        # SHAP explainer (برای XGBoost بهتره از TreeExplainer استفاده کنی)
+        explainer = shap.Explainer(xgb_model)
         shap_values = explainer(transformed_input)
+        st.subheader("🎯 SHAP Explanation for this Patient (XGBoost)")
 
-# نمایش بارزترین فیچرها برای پیش‌بینی این بیمار
-        st.subheader("🧬 SHAP Feature Impact for This Patient")
-        fig_shap = shap.plots.waterfall(shap_values[0], show=False)  # show=False برای کنترل دستی
-        st.pyplot(bbox_inches='tight', dpi=300)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        shap.plots.waterfall(shap_values[0], max_display=10, show=False)
+        st.pyplot(fig)
 
 
         prob_log = log_model.predict_proba(transformed_input)[0][1]
