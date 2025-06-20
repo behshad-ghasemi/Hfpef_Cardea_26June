@@ -101,13 +101,7 @@ if st.button("🔍 Estimate 🔍"):
         else:
             st.success("✅ Low Risk of HFpEF Detected 🎉")
 
-        fig, ax = plt.subplots()
-        sns.barplot(x=["Logistic", "Random Forest", "XGBoost"], y=[prob_log, prob_rf, prob_gb], palette="Set2", ax=ax)
-        ax.set_ylim(0, 1)
-        ax.set_ylabel("Predicted Probability")
-        ax.set_title("Model Comparison")
-        st.pyplot(fig)
-
+# Bar chart for comparison
         fig, ax = plt.subplots(figsize=(6, 5))
         models = ["Logistic Regression", "Random Forest", "XG Boosting"]
         probabilities = [prob_log, prob_rf, prob_gb]
@@ -120,11 +114,4 @@ if st.button("🔍 Estimate 🔍"):
         st.error(f"❌ {e}")
         st.success("💃🥳YOHOOOOOOOOOO, Low Risk of HFpEF 🥳💃")
 
-    # Bar chart for comparison
-    fig, ax = plt.subplots(figsize=(6, 5))
-    models = ["Logistic Regression", "Random Forest", "XG Boosting"]
-    probabilities = [prob_log, prob_rf, prob_gb]
-    sns.barplot(x=models, y=probabilities, palette='mako', ax=ax)
-    ax.set_title("Model Probability Comparison  ")
-    ax.set_ylabel("HFpEF Probability ")
-    st.pyplot(fig)
+
